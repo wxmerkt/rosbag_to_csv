@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from PyQt4.QtGui  import *
-from PyQt4.QtCore import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 import sys
 
 class SimplePyQtGUIKit:
@@ -11,19 +12,15 @@ class SimplePyQtGUIKit:
 
     @classmethod
     def GetFilePath(self,caption="Open File",filefilter="",isApp=False):
-        u"""
+        """
             "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
         """
 
         if not isApp:
           app = QApplication(sys.argv)
-        files=QFileDialog.getOpenFileNames(caption=caption,filter=filefilter)
+        files, _ = QFileDialog.getOpenFileNames(caption=caption,filter=filefilter)
 
-        strlist=[]
-        for file in files:
-            strlist.append(str(file))
-
-        return strlist
+        return files
 
 
     @classmethod
@@ -49,7 +46,7 @@ class SimplePyQtGUIKit:
         verticalLayoutScroll = QVBoxLayout(scrollAreaWidgetContents)
         layoutIndex=0
 
-        if msg is not "":
+        if msg != "":
             label = QLabel(msg)
             layout.addWidget(label,layoutIndex,0)
             layoutIndex=layoutIndex+1
@@ -83,7 +80,7 @@ if __name__ == '__main__':
     #  print "GetCheckButtonSelect"
     #  optList=SimplePyQtGUIKit.GetCheckButtonSelect(["sample a","sample b","sample c"], title="Select sample", msg="Please select sample")
     #  print optList
-    filePath=SimplePyQtGUIKit.GetFilePath(caption=u"Select files",filefilter="*py")
-    print filePath
+    filePath=SimplePyQtGUIKit.GetFilePath(caption="Select files",filefilter="*py")
+    print(filePath)
 
 

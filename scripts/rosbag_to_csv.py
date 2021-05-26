@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 import sys
 from SimplePyQtGUIKit import SimplePyQtGUIKit
-from PyQt4 import QtGui
+from PyQt5.QtWidgets import *
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import rosbag
 import rospy
 import subprocess
@@ -20,7 +23,7 @@ def message_to_csv(stream, msg, flatten=False):
             message_to_csv(stream, val, flatten)
     except:
         msg_str = str(msg)
-        if msg_str.find(",") is not -1:
+        if msg_str.find(",") != -1:
             if flatten:
                 msg_str = msg_str.strip("(")
                 msg_str = msg_str.strip(")")
@@ -67,7 +70,7 @@ def bag_to_csv(options, fname):
         for topic, msg, time in bag.read_messages(topics=options.topic_names,
                                                   start_time=stime,
                                                   end_time=etime):
-            if streamdict.has_key(topic):
+            if topic in streamdict:
                 stream = streamdict[topic]
             else:
                 stream = open(format_csv_filename(options.output_file_format, fname[fname.rfind('/'):-4]+topic),'w')
@@ -81,7 +84,7 @@ def bag_to_csv(options, fname):
             stream.write(datetime.fromtimestamp(time.to_time()).strftime('%Y/%m/%d/%H:%M:%S.%f'))
             message_to_csv(stream, msg, flatten=not options.header)
             stream.write('\n')
-        [s.close for s in streamdict.values()]
+        [s.close for s in list(streamdict.values())]
     except Exception as e:
         rospy.logwarn("fail: %s", e)
     finally:
@@ -90,24 +93,24 @@ def bag_to_csv(options, fname):
 
 def GetTopicList(path):
     bag = rosbag.Bag(path)
-    topics = bag.get_type_and_topic_info()[1].keys()
-    types=[]
-    for i in range(0,len(bag.get_type_and_topic_info()[1].values())):
-        types.append(bag.get_type_and_topic_info()[1].values()[i][0])
+    topics = list(bag.get_type_and_topic_info()[1].keys())
+    types = []
+    for i in range(0,len(list(bag.get_type_and_topic_info()[1].values()))):
+        types.append(list(bag.get_type_and_topic_info()[1].values())[i][0])
 
-    results=[]    
+    results = []
     for to,ty in zip(topics,types):
         results.append(to)
 
-    #  print "GetTopicList result:"
-    #  print results
+    #  print("GetTopicList result:")
+    #  print(results)
     return results
 
 def main(options):
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     #GetFilePath
-    files=SimplePyQtGUIKit.GetFilePath(isApp=True,caption="Select bag file",filefilter="*bag")
+    files=SimplePyQtGUIKit.GetFilePath(isApp=True,caption="Select bag file",filefilter="*.bag")
     #  print files
     if len(files)<1:
         print("Error:Please select a bag file")
@@ -117,7 +120,7 @@ def main(options):
     selected=SimplePyQtGUIKit.GetCheckButtonSelect(topics,app=app,msg="Select topics to convert csv files")
 
     options.topic_names=[]
-    for k,v in selected.items():
+    for k,v in list(selected.items()):
         if v:
             options.topic_names.append(k)
 
@@ -130,10 +133,10 @@ def main(options):
     print("Converting....")
     bag_to_csv(options,files[0])
 
-    QtGui.QMessageBox.information(QtGui.QWidget(), "Message", "Finish Convert!!")
+    QMessageBox.information(QWidget(), "Message", "Conversion finished!")
 
 if __name__ == '__main__':
-    print "rosbag_to_csv start!!"
+    print("rosbag_to_csv start!!")
     rospy.init_node('rosbag_to_csv', anonymous=True)
     parser = OptionParser(usage="%prog [options] bagfile")
     parser.add_option("-a", "--all", dest="all_topics",
